@@ -11,33 +11,42 @@
             <h1>The flipdot Rechenwesen</h1>
         </div>
     </div>
+    {% if message %}
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
     <div class="row">
         <div class="col-xs-12">
             <form class="form-horizontal" action="/" method="post">
                 <div class="form-group">
                     <label for="shop-name" class="col-xs-2 control-label">Shop name</label>
                     <div class="col-xs-10">
-                        <input type="text" class="form-control" id="shop-name" placeholder="Name der Bude wo du was gekaufst hast">
+                        <input type="text" class="form-control" id="shop-name" name="shop-name" placeholder="Name der Bude wo du was gekaufst hast">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="category" class="col-xs-2 control-label">Category</label>
                     <div class="col-xs-10">
-                        <input type="text" class="form-control" placeholder="Drinks, Food, …" id="category">
+                        <input type="text" class="form-control" placeholder="Drinks, Food, …" id="category" name="category">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="price" class="col-xs-2 control-label">Price</label>
                     <div class="col-xs-10">
-                        <input type="text" class="form-control" placeholder="Wieviele Gelds du vom Flipdot kriegst" id="price">
+                        <input type="text" class="form-control" placeholder="Wieviele Gelds du vom Flipdot kriegst" id="price" name="price">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="price" class="col-xs-2 control-label">Le PDF</label>
-                    <input class="col-xs-10" type="file" accept="*.pdf">
+                    <input class="col-xs-10" type="file" accept="*.pdf" name="pdf">
                 </div>
                 <div class="form-group">
-                    <button class="btn btn-primary btn-block" type="submit">Do se Rechen Wesen</button>
+                    <button class="btn btn-primary" type="submit">Do se Rechen Wesen</button>
                 </div>
             </form>
         </div>
