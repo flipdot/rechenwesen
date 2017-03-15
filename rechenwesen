@@ -1,0 +1,61 @@
+#!/bin/bash
+# Checks whether there is a pdf and txt file to be mailed to the rechenwesen.
+# For reference, here is an image of it:
+#
+#          /__/|    ___
+#         |o o \   c|0|
+#   ___  (-..-) \ / |_|
+#   |1|b-==| .   |
+#   |_|   / ____  \ 
+#        | /    \ |
+#       -==      ==-
+
+dir=$HOME/rechenwesen
+files=($dir/upload/*)
+log=$dir/rechenwesen.log
+address=rechenwesen@flipdot.org
+maildir=$dir/mail
+total=0
+attachments=()
+
+for i in ${files[@]}; do
+	end=${i##*.}
+	base=${i%%.*}
+
+	# File ending is not .pdf
+	[[ $end == "pdf" ]] || continue
+
+	# MIME type does not match pdf
+	# [[ $(file -ib $i file | cut -f1 -d\;) == "application/pdf" ]] || continue
+
+	# According .txt file exists and has enough info
+	[[ $(cat $base.txt | wc -l) -ge 3 ]] || continue
+
+	attachments+=($i)
+
+	shop=$(head -1 $base.txt)
+	category=$(tail -n +2 $base.txt | head -1)
+	price=$(tail -n +3 $base.txt | head -1)
+	note=$(tail -n +4 $base.txt)
+
+	content="${content}$(printf "%-33s %8.2f EUR\n" "$category ($shop)" "$price")\n"
+	total=$(echo "$total+$price" | bc -l)
+done
+
+content="${content}$(echo "----------------------------------------------")\n"
+content="${content}$(printf "TOTAL %36s EUR\n" "$total")\n"
+content=$(echo "$content" | sed -r 's/\\n/\n/g')
+
+attach=""
+for a in ${attachments[@]}; do
+	attach="$attach -a ""$a"" "
+done
+
+mailx $attach -s "Rechnung" "feliks@flipdot.org" << END_MAIL
+$content
+END_MAIL
+
+# Clean up
+for i in ${files[@]}; do
+	rm "$i"
+done
