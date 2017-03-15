@@ -7,7 +7,11 @@ app = Flask(__name__)
 def index():
     if request.method == 'GET':
         return render_template('index.html')
-    return 'Hello World!'
+    elif request.method == 'POST':
+        print(request.form)
+        print(request.files)
+        return render_template('index.html', message='Danke für dein Wisch!')
+    return 'Strange thinks happend'
 
 
 if __name__ == '__main__':
