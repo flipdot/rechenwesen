@@ -2,13 +2,13 @@
 # Checks whether there is a pdf and txt file to be mailed to the rechenwesen.
 # For reference, here is an image of it:
 #
-#          /__/|    ___
-#         |o o \   c|0|
-#   ___  (-..-) \ / |_|
-#   |1|b-==| .   |
-#   |_|   / ____  \
-#        | /    \ |
-#       -==      ==-
+#          /__/|    ____
+#         |o o \   c|01|
+#     __ (-..-) \ / |10|
+#     /b-==| .   |  ----
+#    /    / ____  \
+# __/_   | /    \ |
+#'''''  -==      ==-
 
 dir=$HOME/rechenwesen
 files=($dir/upload/*)
