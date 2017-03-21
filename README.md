@@ -14,6 +14,9 @@ Here is image for referenze:
  11 #       -==      ==-
 ```
 
+Or an animation:
+![woohoo](rechenwesen.gif)
+
 ## Benutze
 
 Visit the: https://flipdot.org/rechenwesen
