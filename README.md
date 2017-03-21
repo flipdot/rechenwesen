@@ -26,3 +26,10 @@ Visit the: https://flipdot.org/rechenwesen
     * Date of shoppingness
     * Scanned PDF
   * Hochlade
+
+## Debugge
+* Intermediare txt-format:
+  * Linie 1: `Shop's name`
+  * Linie 2: `Categor[y|ies]` (If you want to use multiple categories, use commas without spaces to separate them)
+  * Linie 3: `Price` (z.B. `23.42`, meaning 23.42€)
+  * Zeile 4 and onwards: `Commentary`
