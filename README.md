@@ -36,3 +36,7 @@ Visit the: https://flipdot.org/rechenwesen
   * Linie 2: `Categor[y|ies]` (If you want to use multiple categories, use commas without spaces to separate them)
   * Linie 3: `Price` (z.B. `23.42`, meaning 23.42€)
   * Zeile 4 and onwards: `Commentary`
+
+## Runne
+
+    sudo docker run -it -p 8000:8000 -v /mnt_on_host/upload:/app/upload/ flipdot/rechenwesen
