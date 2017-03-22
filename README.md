@@ -39,3 +39,7 @@ Visit the: https://flipdot.org/rechenwesen
 
 ## Lese
 Schriftart herunterlad [hier](http://www.dafont.com/nanotype.font). <--
+
+## Runne
+
+    sudo docker run -it -p 8000:8000 -v /mnt_on_host/upload:/app/upload/ flipdot/rechenwesen
