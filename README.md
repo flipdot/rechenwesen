@@ -36,3 +36,6 @@ Visit the: https://flipdot.org/rechenwesen
   * Linie 2: `Categor[y|ies]` (If you want to use multiple categories, use commas without spaces to separate them)
   * Linie 3: `Price` (z.B. `23.42`, meaning 23.42€)
   * Zeile 4 and onwards: `Commentary`
+
+## Lese
+Schriftart herunterlad [hier](http://www.dafont.com/nanotype.font). <--

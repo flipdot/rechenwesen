@@ -1,0 +1,53 @@
+#!/bin/bash
+# Makes the rechenwesen read the string you want it to
+
+[[ $# -lt 1 ]] && exit 5
+
+cd $(dirname $0)
+
+MESSAGE="x   $@"
+FONT=$(pwd)/nanotype.ttf
+BASE_GIF=$(pwd)/rechenwesen.gif
+TMP_DIR=$(mktemp -d /tmp/rechenwesen-XXXXXXXX)
+
+MSG_W=12
+MSG_H=8
+MSG_X=10
+MSG_Y=10
+
+cd "$TMP_DIR"
+convert "$BASE_GIF" "tmp.png"
+
+# Flatten PNG layers
+for i in {1..16}; do
+    convert tmp-0.png tmp-$i.png -flatten flat-$i.png
+done
+
+IMG_TMP=tmp-text.png
+convert -background white -font "$FONT" -pointsize 16 label:"$MESSAGE" "$IMG_TMP"
+w=$(identify -format "%w" "$IMG_TMP")
+
+for i in $(seq 5 $((w+MSG_W-2))); do
+    convert -background white -font "$FONT" -pointsize 16 label:"$MESSAGE" -crop 12x10+$i+5 text-$i.png
+    convert -page +0+0 flat-16.png -page +10+10 text-$i.png -flatten end-$i.png
+done
+
+tmpin1=
+for i in {1..16}; do
+    tmpin1="$tmpin1 flat-$i.png"
+done
+
+tmpin2=
+for i in $(seq 0 $((w-1))); do
+    tmpin2="$tmpin2 end-$i.png"
+done
+
+tmpin3=
+for i in {16..1}; do
+    tmpin3="$tmpin3 flat-$i.png"
+done
+
+convert $tmpin1 $tmpin2 $tmpin3 end.gif
+
+# eog end.gif
+echo $TMP_DIR
