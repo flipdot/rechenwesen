@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build -t flipdot/rechenwesen .
+docker-compose build
