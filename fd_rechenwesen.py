@@ -49,7 +49,7 @@ def index():
             replacements = {'{{SHOPNAME}}': shop_name, '{{TAGS}}': tags, '{{BETRAG}}': price}
             with open(dir_path + "/frontpage.html") as infile, open(frontpage_template, 'w') as outfile:
                 for line in infile:
-                    for src, target in replacements.iteritems():
+                    for src, target in list(replacements.items()):
                         line = line.replace(src, target)
                     outfile.write(line)
 
