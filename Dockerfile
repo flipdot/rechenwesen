@@ -1,7 +1,9 @@
-FROM python:alpine
+FROM python
 
 WORKDIR /app/
 COPY requirements.txt .
+
+RUN apt update; apt install -y imagemagick ghostscript
 RUN pip install -r requirements.txt
 
 COPY fd_rechenwesen.py .
