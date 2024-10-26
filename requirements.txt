@@ -4,7 +4,7 @@ gunicorn==22.0.0
 itsdangerous==0.24
 Jinja2==3.1.4
 MarkupSafe==1.0
-Werkzeug==3.0.3
+Werkzeug==3.0.6
 wheel==0.38.1
 easywebdav==1.2.0
 weasyprint==0.31
