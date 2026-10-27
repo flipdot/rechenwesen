@@ -2,7 +2,7 @@
 name = "rechenwesen"
 version = "0.1.0"
 description = "Flask service that turns scanned receipts into PDFs and uploads them to WebDAV"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "easywebdav==1.2.0",
     "flask>=3.1.3",
