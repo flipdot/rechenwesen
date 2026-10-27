@@ -4,4 +4,4 @@ services:
         image: flipdot/rechenwesen
         build: .
         environment:
-            WEBDAV_PASSWORD: oYUjs7eZWCeq8MvY5bxqSzJ4nVXgfrVt
+            WEBDAV_PASSWORD: ${WEBDAV_PASSWORD}
