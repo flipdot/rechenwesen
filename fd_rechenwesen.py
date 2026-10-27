@@ -1,9 +1,10 @@
 # coding=utf-8
 import os
+import secrets
 import shutil
 from easywebdav import connect as easywebdav_connect
 
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, Response, current_app
 from werkzeug.utils import secure_filename
 from datetime import datetime
 
@@ -13,7 +14,38 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 username = os.environ.get('WEBDAV_USER') or "rechenwesen"
 password = os.environ.get('WEBDAV_PASSWORD')
 
+# Basic-Auth (Issue #1): nur aktiv, wenn AUTH_PASSWORD gesetzt ist.
+# Ohne gesetztes Passwort bleibt die Seite frei erreichbar (Tests, lokale Dev).
+app.config['AUTH_USER'] = os.environ.get('AUTH_USER') or "rechenwesen"
+app.config['AUTH_PASSWORD'] = os.environ.get('AUTH_PASSWORD')
+
 webdav = easywebdav_connect("cloud.flipdot.org", protocol='https', username=username, password=password)
+
+
+def _unauthorized():
+    return Response(
+        "Authentifizierung erforderlich",
+        status=401,
+        headers={'WWW-Authenticate': 'Basic realm="flipdot Rechenwesen"'},
+    )
+
+
+@app.before_request
+def require_auth():
+    """Blockt alle Requests, wenn AUTH_PASSWORD gesetzt ist und die
+    Basic-Auth-Credentials nicht stimmen. Ohne AUTH_PASSWORD: kein Schutz."""
+    auth_password = current_app.config.get('AUTH_PASSWORD')
+    if not auth_password:
+        return None
+
+    auth = request.authorization
+    username = getattr(auth, 'username', None) if auth else None
+    password = getattr(auth, 'password', None) if auth else None
+
+    user_ok = secrets.compare_digest(username or "", current_app.config.get('AUTH_USER') or "")
+    pass_ok = secrets.compare_digest(password or "", auth_password)
+    if not (user_ok and pass_ok):
+        return _unauthorized()
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -37,7 +69,6 @@ def index():
             os.system("convert \""+ filepath + "\" \""+pdf_filepath+"\"")
 
             frontpage_path = filepath + "-frontpage.pdf"
-            frontpage_template = filepath + "-frontpage.html"
 
             get = lambda x: request.form.get(x, '').replace('\n', '') + '\n'
             getlist = lambda x: ','.join([y.replace('\n', '') for y in request.form.getlist(x)]) + '\n'
@@ -45,15 +76,27 @@ def index():
             shop_name = get('shop-name')
             tags = getlist('tags')
             price = get('price')
+            person = get('person')
+            iban = get('iban')
 
-            replacements = {'{{SHOPNAME}}': shop_name, '{{TAGS}}': tags, '{{BETRAG}}': price}
-            with open(dir_path + "/frontpage.html") as infile, open(frontpage_template, 'w') as outfile:
-                for line in infile:
-                    for src, target in list(replacements.items()):
-                        line = line.replace(src, target)
-                    outfile.write(line)
+            replacements = {
+                '{{SHOPNAME}}': shop_name,
+                '{{TAGS}}': tags,
+                '{{BETRAG}}': price,
+                '{{PERSON}}': person,
+                '{{IBAN}}': iban,
+            }
+            # Build the frontpage in memory and render it straight to PDF so the
+            # (confidential) IBAN/person never land on disk as clear text. weasyprint
+            # is imported lazily: its native libs only exist in the Docker image, and
+            # the module must stay importable (tests) without them.
+            with open(dir_path + "/frontpage.html", encoding='utf-8') as infile:
+                frontpage_html = infile.read()
+            for src, target in list(replacements.items()):
+                frontpage_html = frontpage_html.replace(src, target)
 
-            os.system("weasyprint \""+frontpage_template+"\" \""+frontpage_path+"\"")
+            from weasyprint import HTML
+            HTML(string=frontpage_html).write_pdf(frontpage_path)
 
             final_pdf = filepath + "-final.pdf"
             os.system('gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile="'+final_pdf+'" "'+frontpage_path+'" "'+pdf_filepath+'"')
@@ -65,7 +108,6 @@ def index():
             os.remove(pdf_filepath)
             os.remove(frontpage_path)
             os.remove(final_pdf)
-            os.remove(frontpage_template)
 
         return render_template('index.html', message=u'Danke für dein Wisch!')
     return 'Strange thinks happend'

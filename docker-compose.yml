@@ -5,3 +5,7 @@ services:
         build: .
         environment:
             WEBDAV_PASSWORD: ${WEBDAV_PASSWORD}
+            # Basic-Auth für die Rechenwesen-Seite (Issue #1).
+            # AUTH_PASSWORD leer lassen = Seite öffentlich; Wert setzen = geschützt.
+            AUTH_USER: ${AUTH_USER:-rechenwesen}
+            AUTH_PASSWORD: ${AUTH_PASSWORD}

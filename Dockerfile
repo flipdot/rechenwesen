@@ -22,7 +22,8 @@ COPY fd_rechenwesen.py .
 COPY templates/ ./templates/
 COPY frontpage.html .
 
-# The app runs `weasyprint` as a CLI, so the venv must be on PATH.
+# The venv must be on PATH for the gunicorn entrypoint; weasyprint is imported
+# (not a CLI), so its native libs (installed above) must be present.
 ENV PATH="/app/.venv/bin:$PATH"
 ENV GUNICORN_CMD_ARGS="--bind=0.0.0.0"
 
