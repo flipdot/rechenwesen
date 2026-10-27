@@ -2,3 +2,6 @@
 *.xcf
 .idea
 upload/
+
+# uv
+.venv/
