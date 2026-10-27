@@ -69,7 +69,6 @@ def index():
             os.system("convert \""+ filepath + "\" \""+pdf_filepath+"\"")
 
             frontpage_path = filepath + "-frontpage.pdf"
-            frontpage_template = filepath + "-frontpage.html"
 
             get = lambda x: request.form.get(x, '').replace('\n', '') + '\n'
             getlist = lambda x: ','.join([y.replace('\n', '') for y in request.form.getlist(x)]) + '\n'
@@ -87,13 +86,17 @@ def index():
                 '{{PERSON}}': person,
                 '{{IBAN}}': iban,
             }
-            with open(dir_path + "/frontpage.html") as infile, open(frontpage_template, 'w') as outfile:
-                for line in infile:
-                    for src, target in list(replacements.items()):
-                        line = line.replace(src, target)
-                    outfile.write(line)
+            # Build the frontpage in memory and render it straight to PDF so the
+            # (confidential) IBAN/person never land on disk as clear text. weasyprint
+            # is imported lazily: its native libs only exist in the Docker image, and
+            # the module must stay importable (tests) without them.
+            with open(dir_path + "/frontpage.html", encoding='utf-8') as infile:
+                frontpage_html = infile.read()
+            for src, target in list(replacements.items()):
+                frontpage_html = frontpage_html.replace(src, target)
 
-            os.system("weasyprint \""+frontpage_template+"\" \""+frontpage_path+"\"")
+            from weasyprint import HTML
+            HTML(string=frontpage_html).write_pdf(frontpage_path)
 
             final_pdf = filepath + "-final.pdf"
             os.system('gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile="'+final_pdf+'" "'+frontpage_path+'" "'+pdf_filepath+'"')
@@ -105,7 +108,6 @@ def index():
             os.remove(pdf_filepath)
             os.remove(frontpage_path)
             os.remove(final_pdf)
-            os.remove(frontpage_template)
 
         return render_template('index.html', message=u'Danke für dein Wisch!')
     return 'Strange thinks happend'
