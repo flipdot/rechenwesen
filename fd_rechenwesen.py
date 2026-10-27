@@ -1,9 +1,10 @@
 # coding=utf-8
 import os
+import secrets
 import shutil
 from easywebdav import connect as easywebdav_connect
 
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, Response, current_app
 from werkzeug.utils import secure_filename
 from datetime import datetime
 
@@ -13,7 +14,38 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 username = os.environ.get('WEBDAV_USER') or "rechenwesen"
 password = os.environ.get('WEBDAV_PASSWORD')
 
+# Basic-Auth (Issue #1): nur aktiv, wenn AUTH_PASSWORD gesetzt ist.
+# Ohne gesetztes Passwort bleibt die Seite frei erreichbar (Tests, lokale Dev).
+app.config['AUTH_USER'] = os.environ.get('AUTH_USER') or "rechenwesen"
+app.config['AUTH_PASSWORD'] = os.environ.get('AUTH_PASSWORD')
+
 webdav = easywebdav_connect("cloud.flipdot.org", protocol='https', username=username, password=password)
+
+
+def _unauthorized():
+    return Response(
+        "Authentifizierung erforderlich",
+        status=401,
+        headers={'WWW-Authenticate': 'Basic realm="flipdot Rechenwesen"'},
+    )
+
+
+@app.before_request
+def require_auth():
+    """Blockt alle Requests, wenn AUTH_PASSWORD gesetzt ist und die
+    Basic-Auth-Credentials nicht stimmen. Ohne AUTH_PASSWORD: kein Schutz."""
+    auth_password = current_app.config.get('AUTH_PASSWORD')
+    if not auth_password:
+        return None
+
+    auth = request.authorization
+    username = getattr(auth, 'username', None) if auth else None
+    password = getattr(auth, 'password', None) if auth else None
+
+    user_ok = secrets.compare_digest(username or "", current_app.config.get('AUTH_USER') or "")
+    pass_ok = secrets.compare_digest(password or "", auth_password)
+    if not (user_ok and pass_ok):
+        return _unauthorized()
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -45,8 +77,16 @@ def index():
             shop_name = get('shop-name')
             tags = getlist('tags')
             price = get('price')
+            person = get('person')
+            iban = get('iban')
 
-            replacements = {'{{SHOPNAME}}': shop_name, '{{TAGS}}': tags, '{{BETRAG}}': price}
+            replacements = {
+                '{{SHOPNAME}}': shop_name,
+                '{{TAGS}}': tags,
+                '{{BETRAG}}': price,
+                '{{PERSON}}': person,
+                '{{IBAN}}': iban,
+            }
             with open(dir_path + "/frontpage.html") as infile, open(frontpage_template, 'w') as outfile:
                 for line in infile:
                     for src, target in list(replacements.items()):
