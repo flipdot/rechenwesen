@@ -3,5 +3,8 @@
 .idea
 upload/
 
+# env files
+.env
+
 # uv
 .venv/
